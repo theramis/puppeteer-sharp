@@ -10,8 +10,11 @@ namespace PuppeteerSharp.Tests.PuppeteerTests
     [Collection(TestConstants.TestFixtureCollectionName)]
     public class HeadfulTests : PuppeteerBaseTest
     {
+        private readonly ITestOutputHelper _output;
+
         public HeadfulTests(ITestOutputHelper output) : base(output)
         {
+            _output = output;
         }
 
         [Fact]
@@ -141,25 +144,31 @@ namespace PuppeteerSharp.Tests.PuppeteerTests
         [Fact]
         public async Task BringToFrontShouldWork()
         {
+            _output.WriteLine("Start of Test");
             using (var browserWithExtension = await Puppeteer.LaunchAsync(
                 TestConstants.BrowserWithExtensionOptions(),
                 TestConstants.LoggerFactory))
-            using (var page = await browserWithExtension.NewPageAsync())
             {
-                await page.GoToAsync(TestConstants.EmptyPage);
-                Assert.Equal("visible", await page.EvaluateExpressionAsync<string>("document.visibilityState"));
+                _output.WriteLine("First using");
+                using (var page = await browserWithExtension.NewPageAsync())
+                {
+                    _output.WriteLine("Second using");
+                    await page.GoToAsync(TestConstants.EmptyPage);
+                    Assert.Equal("visible", await page.EvaluateExpressionAsync<string>("document.visibilityState"));
 
-                var newPage = await browserWithExtension.NewPageAsync();
-                await newPage.GoToAsync(TestConstants.EmptyPage);
-                Assert.Equal("hidden", await page.EvaluateExpressionAsync<string>("document.visibilityState"));
-                Assert.Equal("visible", await newPage.EvaluateExpressionAsync<string>("document.visibilityState"));
+                    var newPage = await browserWithExtension.NewPageAsync();
+                    await newPage.GoToAsync(TestConstants.EmptyPage);
+                    Assert.Equal("hidden", await page.EvaluateExpressionAsync<string>("document.visibilityState"));
+                    Assert.Equal("visible", await newPage.EvaluateExpressionAsync<string>("document.visibilityState"));
 
-                await page.BringToFrontAsync();
-                Assert.Equal("visible", await page.EvaluateExpressionAsync<string>("document.visibilityState"));
-                Assert.Equal("hidden", await newPage.EvaluateExpressionAsync<string>("document.visibilityState"));
+                    await page.BringToFrontAsync();
+                    Assert.Equal("visible", await page.EvaluateExpressionAsync<string>("document.visibilityState"));
+                    Assert.Equal("hidden", await newPage.EvaluateExpressionAsync<string>("document.visibilityState"));
 
-                await newPage.CloseAsync();
+                    await newPage.CloseAsync();
+                }
             }
+            _output.WriteLine("End of Test");
         }
     }
 }

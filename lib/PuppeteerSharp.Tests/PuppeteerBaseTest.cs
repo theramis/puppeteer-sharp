@@ -25,7 +25,9 @@ namespace PuppeteerSharp.Tests
                 dirInfo.Create();
             }
 
+            output.WriteLine("Start init");
             Initialize();
+            output.WriteLine("Finish init");
         }
 
         protected void Initialize()
